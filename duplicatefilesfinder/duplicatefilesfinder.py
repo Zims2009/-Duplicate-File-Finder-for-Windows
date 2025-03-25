@@ -138,7 +138,7 @@ entry_path = tk.Entry(frame, width=50)
 entry_path.pack(side=tk.LEFT, padx=5)
 tk.Button(frame, text="Browse", command=browse_folder).pack(side=tk.LEFT)
 
-tk.Button(root, text="Scan Duplicates", command=scan_duplicates_thread).pack(pady=5)
+tk.Button(root, text="Scan Duplicates", command=scan_duplicates).pack(pady=5)
 
 status_text = tk.Text(root, height=2, width=80)
 status_text.pack(pady=5)
