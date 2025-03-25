@@ -130,12 +130,12 @@ btn_browse.pack(side=tk.LEFT)
 btn_scan = tk.Button(root, text="Scan for Duplicates", command=scan_duplicates)
 btn_scan.pack(pady=10)
 
-btn_sort = tk.Button(root, text="Sort by Size", command=toggle_sort)
-btn_sort.pack(pady=5)
-
 tk.Label(root, text="Scanning Status:").pack(pady=5)
 status_text = scrolledtext.ScrolledText(root, width=70, height=2)
 status_text.pack(pady=5)
+
+btn_sort = tk.Button(root, text="Sort by Size", command=toggle_sort)
+btn_sort.pack(pady=5)
 
 result_text = scrolledtext.ScrolledText(root, width=70, height=15)
 result_text.pack(pady=5, fill=tk.BOTH, expand=True)
