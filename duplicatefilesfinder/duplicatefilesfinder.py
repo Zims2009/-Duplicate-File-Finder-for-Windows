@@ -136,7 +136,7 @@ frame.pack(pady=10)
 
 entry_path = tk.Entry(frame, width=50)
 entry_path.pack(side=tk.LEFT, padx=5)
-tk.Button(frame, text="Browse", command=lambda: entry_path.insert(0, filedialog.askdirectory())).pack(side=tk.LEFT)
+tk.Button(frame, text="Browse", command=browse_folder).pack(side=tk.LEFT)
 
 tk.Button(root, text="Scan Duplicates", command=scan_duplicates_thread).pack(pady=5)
 
