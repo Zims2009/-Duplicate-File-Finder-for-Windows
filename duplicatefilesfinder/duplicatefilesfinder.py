@@ -17,6 +17,17 @@ def get_file_hash(file_path, hash_algo=hashlib.md5):
     except (OSError, PermissionError):
         return None
 
+def get_file_size(file_path):
+    """Get file size in human-readable format."""
+    try:
+        size = os.path.getsize(file_path)
+        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+            if size < 1024:
+                return f"{size:.2f} {unit}"
+            size /= 1024
+    except (OSError, PermissionError):
+        return "Unknown"
+
 def find_duplicate_files(directory):
     """Find duplicate files in the given directory."""
     hash_map = defaultdict(list)
@@ -67,6 +78,7 @@ def remove_highlight(event):
     result_text.tag_remove("highlight", "1.0", tk.END)
 
 def scan_duplicates_thread():
+    global duplicate_files
     directory = entry_path.get().strip()
     if not os.path.exists(directory):
         messagebox.showerror("Error", "Invalid directory. Please select a valid folder.")
@@ -76,22 +88,34 @@ def scan_duplicates_thread():
     result_text.insert(tk.END, "Scanning for duplicates...\n")
     
     duplicate_files = find_duplicate_files(directory)
+    display_results()
+    
+    status_text.delete(1.0, tk.END)
+    status_text.insert(tk.END, "Scan Complete\n")
+
+def display_results(sort_by_size=False, ascending=True):
+    result_text.delete(1.0, tk.END)
     if duplicate_files:
+        sorted_duplicates = sorted(duplicate_files.items(), key=lambda x: os.path.getsize(x[1][0]) if os.path.exists(x[1][0]) else 0, reverse=not ascending) if sort_by_size else duplicate_files.items()
         result_text.insert(tk.END, "Duplicate files found:\n\n")
-        for file_hash, paths in duplicate_files.items():
-            result_text.insert(tk.END, f"Hash: {file_hash}\n")
+        for file_hash, paths in sorted_duplicates:
+            file_size = get_file_size(paths[0])
+            result_text.insert(tk.END, f"Hash: {file_hash} - {file_size}\n")
             for path in paths:
                 result_text.insert(tk.END, f"  {path}\n", "clickable")
             result_text.insert(tk.END, "-" * 40 + "\n")
     else:
         result_text.insert(tk.END, "No duplicate files found.\n")
-    status_text.delete(1.0, tk.END)
-    status_text.insert(tk.END, "Scan Complete\n")
+
+def toggle_sort():
+    global sort_ascending
+    sort_ascending = not sort_ascending
+    display_results(sort_by_size=True, ascending=sort_ascending)
 
 # GUI Setup
 root = tk.Tk()
 root.title("Duplicate File Checker")
-root.geometry("600x450")
+root.geometry("600x500")
 
 tk.Label(root, text="Select Folder:").pack(pady=5)
 frame = tk.Frame(root)
@@ -106,11 +130,14 @@ btn_browse.pack(side=tk.LEFT)
 btn_scan = tk.Button(root, text="Scan for Duplicates", command=scan_duplicates)
 btn_scan.pack(pady=10)
 
+btn_sort = tk.Button(root, text="Sort by Size", command=toggle_sort)
+btn_sort.pack(pady=5)
+
 tk.Label(root, text="Scanning Status:").pack(pady=5)
 status_text = scrolledtext.ScrolledText(root, width=70, height=2)
 status_text.pack(pady=5)
 
-result_text = scrolledtext.ScrolledText(root, width=70, height=10)
+result_text = scrolledtext.ScrolledText(root, width=70, height=15)
 result_text.pack(pady=5, fill=tk.BOTH, expand=True)
 result_text.bind("<Button-1>", open_folder)
 result_text.bind("<Motion>", highlight_clickable)
@@ -118,5 +145,7 @@ result_text.bind("<Leave>", remove_highlight)
 
 result_text.tag_config("clickable", foreground="blue", underline=True)
 result_text.tag_config("highlight", background="lightgray")
+
+sort_ascending = True
 
 root.mainloop()
